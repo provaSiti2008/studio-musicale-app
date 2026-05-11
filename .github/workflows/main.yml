@@ -10,19 +10,23 @@ jobs:
         with:
           channel: 'stable'
 
-      # 1. Creiamo la struttura iOS da zero
+      # Crea la cartella iOS pulita
       - run: flutter create . --platforms ios --org com.studiomusicale
 
-      # 2. Questa riga corregge l'errore del Bundle ID/Team
+      # MODIFICA MANUALE DEI FILE XCODE (Trucco per Windows)
       - run: |
+          echo "CODE_SIGNING_ALLOWED=NO" >> ios/Flutter/Generated.xcconfig
+          echo "CODE_SIGNING_REQUIRED=NO" >> ios/Flutter/Generated.xcconfig
+          sed -i '' 's/CODE_SIGNING_ALLOWED = YES/CODE_SIGNING_ALLOWED = NO/g' ios/Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGNING_REQUIRED = YES/CODE_SIGNING_REQUIRED = NO/g' ios/Runner.xcodeproj/project.pbxproj
           sed -i '' 's/PRODUCT_BUNDLE_IDENTIFIER = com.example.studioMusicaleApp/PRODUCT_BUNDLE_IDENTIFIER = com.studiomusicale.app/g' ios/Runner.xcodeproj/project.pbxproj
 
       - run: flutter pub get
 
-      # 3. Comando di build pulito (senza opzioni sbagliate)
+      # Build senza firma
       - run: flutter build ios --release --no-codesign
 
-      # 4. Creazione pacchetto IPA
+      # Impacchettamento IPA
       - name: Create IPA
         run: |
           mkdir -p Payload
