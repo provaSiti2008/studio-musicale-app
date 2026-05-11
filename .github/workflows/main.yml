@@ -5,18 +5,30 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
+      
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - run: flutter create . --platforms ios
+
+      # 1. Creiamo la struttura iOS da zero
+      - run: flutter create . --platforms ios --org com.studiomusicale
+
+      # 2. Questa riga corregge l'errore del Bundle ID/Team
+      - run: |
+          sed -i '' 's/PRODUCT_BUNDLE_IDENTIFIER = com.example.studioMusicaleApp/PRODUCT_BUNDLE_IDENTIFIER = com.studiomusicale.app/g' ios/Runner.xcodeproj/project.pbxproj
+
       - run: flutter pub get
-      - run: flutter build ios --release --no-codesign --project-name=studio_musicale_app --dart-define=BUNDLE_ID=com.tuonome.studiomusicale
+
+      # 3. Comando di build pulito (senza opzioni sbagliate)
+      - run: flutter build ios --release --no-codesign
+
+      # 4. Creazione pacchetto IPA
       - name: Create IPA
         run: |
           mkdir -p Payload
-          # Questo comando trova l'app ovunque sia stata creata e la mette in Payload
           find build/ios/iphoneos -name "*.app" -exec cp -r {} Payload/ \;
           zip -r app.ipa Payload
+
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
