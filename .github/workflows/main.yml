@@ -10,7 +10,7 @@ jobs:
           channel: 'stable'
       - run: flutter create . --platforms ios
       - run: flutter pub get
-      - run: flutter build ios --release --no-codesign
+      - run: flutter build ios --release --no-codesign --project-name=studio_musicale_app --dart-define=BUNDLE_ID=com.tuonome.studiomusicale
       - name: Create IPA
         run: |
           mkdir -p Payload
