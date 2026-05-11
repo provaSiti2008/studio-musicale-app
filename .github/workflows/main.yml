@@ -3,20 +3,31 @@ on: [push]
 jobs:
   build:
     runs-on: macos-latest
-    steps:
+   steps:
       - uses: actions/checkout@v3
+      
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - run: flutter create . --platforms ios
+
+      # 1. Cancelliamo eventuali residui e ricreiamo la cartella iOS pulita
+      - run: |
+          rm -rf ios
+          flutter create . --platforms ios --org com.studiomusicale
+          
+      # 2. Scarichiamo le librerie (incluso Supabase)
       - run: flutter pub get
-      - run: flutter build ios --release --no-codesign --project-name=studio_musicale_app --dart-define=BUNDLE_ID=com.tuonome.studiomusicale
+
+      # 3. Lanciamo la build forzando il "No Codesign"
+      - run: flutter build ios --release --no-codesign
+      
+      # 4. Creiamo il pacchetto IPA (come abbiamo fatto prima)
       - name: Create IPA
         run: |
           mkdir -p Payload
-          # Questo comando trova l'app ovunque sia stata creata e la mette in Payload
           find build/ios/iphoneos -name "*.app" -exec cp -r {} Payload/ \;
           zip -r app.ipa Payload
+          
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
