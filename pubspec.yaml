@@ -8,6 +8,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  supabase_flutter: ^2.0.0  # <--- ABBIAMO AGGIUNTO QUESTA
 
 dev_dependencies:
   flutter_test:
