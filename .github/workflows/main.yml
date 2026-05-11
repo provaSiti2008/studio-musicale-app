@@ -10,23 +10,24 @@ jobs:
         with:
           channel: 'stable'
 
-      # Crea la cartella iOS pulita
       - run: flutter create . --platforms ios --org com.studiomusicale
 
-      # MODIFICA MANUALE DEI FILE XCODE (Trucco per Windows)
+      # MODIFICA PROFONDA: Iniettiamo il blocco totale del signing nel progetto Xcode
       - run: |
-          echo "CODE_SIGNING_ALLOWED=NO" >> ios/Flutter/Generated.xcconfig
-          echo "CODE_SIGNING_REQUIRED=NO" >> ios/Flutter/Generated.xcconfig
           sed -i '' 's/CODE_SIGNING_ALLOWED = YES/CODE_SIGNING_ALLOWED = NO/g' ios/Runner.xcodeproj/project.pbxproj
           sed -i '' 's/CODE_SIGNING_REQUIRED = YES/CODE_SIGNING_REQUIRED = NO/g' ios/Runner.xcodeproj/project.pbxproj
           sed -i '' 's/PRODUCT_BUNDLE_IDENTIFIER = com.example.studioMusicaleApp/PRODUCT_BUNDLE_IDENTIFIER = com.studiomusicale.app/g' ios/Runner.xcodeproj/project.pbxproj
+          # Questa riga aggiunge l'istruzione per saltare il controllo del team
+          echo "CODE_SIGN_IDENTITY = -" >> ios/Flutter/Generated.xcconfig
+          echo "CODE_SIGNING_REQUIRED = NO" >> ios/Flutter/Generated.xcconfig
+          echo "CODE_SIGNING_ALLOWED = NO" >> ios/Flutter/Generated.xcconfig
+          echo "AD_HOC_CODE_SIGNING_ALLOWED = YES" >> ios/Flutter/Generated.xcconfig
 
       - run: flutter pub get
 
-      # Build senza firma
-      - run: flutter build ios --release --no-codesign
+      # Proviamo la build puntando esplicitamente a non firmare
+      - run: flutter build ios --release --no-codesign --extra-gen-snapshot-options=--no-clean
 
-      # Impacchettamento IPA
       - name: Create IPA
         run: |
           mkdir -p Payload
